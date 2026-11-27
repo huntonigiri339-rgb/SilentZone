@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system" data-accent="copper">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SilentZone — Quiet by Design{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg: #F6F4EE;
+      --surface: #FFFFFF;
+      --surface-2: #EFECE4;
+      --ink: #101D33;
+      --muted: #556070;
+      --border: #DFD9CC;
+      --accent: #C46D3B;
+      --accent-soft: rgba(196, 109, 59, 0.12);
+    }
+    html.dark {
+      --bg: #0C0D0F;
+      --surface: #14161A;
+      --surface-2: #1B1E24;
+      --ink: #F2EFE9;
+      --muted: #98A0AD;
+      --border: #262A33;
+      --accent: #D88A5B;
+      --accent-soft: rgba(216, 138, 91, 0.14);
+    }
+    html[data-accent="teal"] { --accent: #0F9D8A; --accent-soft: rgba(15, 157, 138, 0.14); }
+    html[data-accent="navy"] { --accent: #3B82F6; --accent-soft: rgba(59, 130, 246, 0.14); }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+    .font-editorial { font-family: 'Instrument Serif', Georgia, serif; }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .sz-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 1.25rem;
+    }
+    .sz-pill {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .sz-btn-primary {
+      background: var(--accent);
+      color: #FFFFFF;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+    .sz-btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+    .sz-muted { color: var(--muted); }
+    .sz-border { border-color: var(--border); }
+    .sz-surface-2 { background: var(--surface-2); }
+  </style>
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('sz_theme') || 'system';
+      const savedAccent = localStorage.getItem('sz_accent') || 'copper';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.setAttribute('data-accent', savedAccent);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'dark' || (savedTheme === 'system' && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+  <header class="sticky top-0 z-40 backdrop-blur-md border-b sz-border" style="background: color-mix(in srgb, var(--bg) 84%, transparent);">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+      <a href="/" class="flex items-center gap-2.5 group">
+        <span class="w-8 h-8 rounded-full flex items-center justify-center border sz-border sz-surface-2">
+          <span class="w-2.5 h-2.5 rounded-full" style="background: var(--accent);"></span>
+        </span>
+        <span class="font-semibold tracking-tight text-base">SilentZone <span class="font-normal sz-muted text-xs">Labs</span></span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium sz-muted">
+        <a href="/#how-it-works" class="hover:opacity-80">How It Works</a>
+        <a href="/#venues" class="hover:opacity-80">Live Venues</a>
+        <a href="/admin" class="hover:opacity-80">Venue Studio</a>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center rounded-full p-0.5 border sz-border sz-surface-2 text-xs">
+          <button onclick="setTheme('system')" data-theme-btn="system" class="px-2.5 py-1 rounded-full">Auto</button>
+          <button onclick="setTheme('light')" data-theme-btn="light" class="px-2.5 py-1 rounded-full">Light</button>
+          <button onclick="setTheme('dark')" data-theme-btn="dark" class="px-2.5 py-1 rounded-full">Dark</button>
+        </div>
+        <div class="hidden sm:flex items-center gap-1.5 pl-1">
+          <button onclick="setAccent('copper')" title="Copper" class="w-4 h-4 rounded-full border border-white/30" style="background:#C46D3B;"></button>
+          <button onclick="setAccent('teal')" title="Acoustic Teal" class="w-4 h-4 rounded-full border border-white/30" style="background:#0F9D8A;"></button>
+          <button onclick="setAccent('navy')" title="Signal Blue" class="w-4 h-4 rounded-full border border-white/30" style="background:#3B82F6;"></button>
+        </div>
+        <a href="/admin" class="sz-btn-primary text-xs sm:text-sm font-medium px-3.5 py-2 rounded-full">Create Zone</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t sz-border mt-16 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sz-muted">
+      <p>SilentZone Labs · Bengaluru · Built with Gemini &amp; Google Cloud</p>
+      <p>Zero third-party apps · Zero GPS tracking · Emergency repeat-caller safe</p>
+    </div>
+  </footer>
+
+  <script>
+    function applyTheme(mode) {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.setAttribute('data-theme', mode);
+      document.querySelectorAll('[data-theme-btn]').forEach(btn => {
+        const active = btn.getAttribute('data-theme-btn') === mode;
+        btn.style.background = active ? 'var(--surface)' : 'transparent';
+        btn.style.color = active ? 'var(--ink)' : 'var(--muted)';
+        btn.style.fontWeight = active ? '600' : '400';
+      });
+    }
+    function setTheme(mode) {
+      localStorage.setItem('sz_theme', mode);
+      applyTheme(mode);
+    }
+    function setAccent(accent) {
+      localStorage.setItem('sz_accent', accent);
+      document.documentElement.setAttribute('data-accent', accent);
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if ((localStorage.getItem('sz_theme') || 'system') === 'system') applyTheme('system');
+    });
+    applyTheme(localStorage.getItem('sz_theme') || 'system');
+  </script>
+</body>
+</html>
