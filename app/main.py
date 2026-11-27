@@ -233,4 +233,5 @@ async def api_setup_guide(
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "SilentZone"}
+    import os
+    return {"status": "ok", "service": "SilentZone", "gemini_configured": bool(os.getenv("GEMINI_API_KEY", "").strip())}
