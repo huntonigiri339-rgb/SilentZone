@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Venue Studio — SilentZone{% endblock %}
 {% block content %}
-<section class="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+<section class="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-8 sz-reveal">
   <div class="space-y-2">
     <p class="text-xs font-mono-code uppercase tracking-wider sz-muted">Venue Studio</p>
     <h1 class="font-editorial text-4xl sm:text-5xl">Create a live SilentZone</h1>
-    <p class="text-sm sm:text-base sz-muted">Snap a photo of any timetable or paste text. Gemini extracts the quiet windows and builds your permanent `.ics` feed and QR poster.</p>
+    <p class="text-sm sm:text-base sz-muted">Upload a timetable photo or paste text. Gemini extracts quiet windows, generates your `.ics` feed, and creates a scannable QR code.</p>
   </div>
 
   <div class="sz-card p-6 sm:p-8 space-y-6">
@@ -13,23 +13,27 @@
       <h2 class="font-semibold text-base">1. Extract Schedule with Gemini</h2>
       <div class="flex flex-wrap gap-2">
         <button type="button" onclick="loadDemo('masjid')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Load Demo Masjid</button>
-        <button type="button" onclick="loadDemo('library')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Load Demo College</button>
+        <button type="button" onclick="loadDemo('library')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Load Demo Library</button>
+        <button type="button" onclick="loadDemo('hospital')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Load Demo Hospital</button>
       </div>
     </div>
 
     <div class="grid sm:grid-cols-2 gap-4">
-      <label class="block p-4 rounded-2xl border border-dashed sz-border sz-surface-2 cursor-pointer text-center space-y-1.5">
-        <span class="block text-sm font-medium">Upload Timetable Photo</span>
-        <span class="block text-xs sz-muted">JPG / PNG of prayer board, class or OPD notice</span>
-        <input id="photoInput" type="file" accept="image/*" class="hidden" onchange="document.getElementById('fileName').textContent = this.files[0]?.name || ''" />
-        <span id="fileName" class="block text-xs font-mono-code" style="color: var(--accent);"></span>
-      </label>
+      <div class="p-4 rounded-2xl border border-dashed sz-border sz-surface-2 flex flex-col items-center justify-center text-center space-y-2">
+        <label for="photoInput" class="cursor-pointer space-y-1.5 w-full">
+          <span class="block text-sm font-semibold">Click to Upload Timetable Photo</span>
+          <span class="block text-xs sz-muted">JPG / PNG / WebP of prayer board, class, or OPD notice</span>
+          <span id="fileName" class="block text-xs font-mono-code pt-1" style="color: var(--accent);"></span>
+        </label>
+        <input id="photoInput" type="file" accept="image/*" class="hidden" onchange="previewPhoto(this)" />
+        <img id="photoPreview" class="hidden max-h-32 rounded-xl border sz-border object-contain mt-2" />
+      </div>
       <div>
-        <textarea id="rawText" rows="4" placeholder="Or paste timetable text here (e.g., Fajr 5:45 AM, Dhuhr 1:15 PM, Asr 4:45 PM...)" class="w-full h-full p-3.5 rounded-2xl border sz-border sz-surface-2 text-sm focus:outline-none"></textarea>
+        <textarea id="rawText" rows="5" placeholder="Or paste timetable text here (e.g., Fajr 5:45 AM, Dhuhr 1:15 PM, Asr 4:45 PM...)" class="w-full h-full p-3.5 rounded-2xl border sz-border sz-surface-2 text-sm focus:outline-none"></textarea>
       </div>
     </div>
 
-    <div class="flex items-center gap-3">
+    <div class="flex flex-wrap items-center gap-3">
       <button type="button" id="parseBtn" onclick="runGeminiParse()" class="sz-btn-primary px-5 py-2.5 rounded-full text-sm font-semibold">Extract Schedule with Gemini</button>
       <span id="parseStatus" class="text-xs sz-muted font-mono-code"></span>
     </div>
@@ -41,11 +45,12 @@
   </div>
 
   <form action="/api/venues" method="POST" class="sz-card p-6 sm:p-8 space-y-5">
-    <h2 class="font-semibold text-base">2. Venue Details &amp; Publish</h2>
+    <h2 class="font-semibold text-base">2. Venue Wi-Fi Beacon &amp; Publish</h2>
+    <p class="text-xs sz-muted">Note: Browsers cannot scan nearby Wi-Fi networks for security reasons—enter your venue's router/hotspot SSID below so visitors' phones can trigger DND locally.</p>
     <div class="grid sm:grid-cols-3 gap-4">
       <div>
         <label class="block text-xs sz-muted mb-1.5">Venue Name</label>
-        <input id="venueName" name="name" required placeholder="e.g., Masjid Al-Noor Bengaluru" class="w-full px-3.5 py-2.5 rounded-xl border sz-border sz-surface-2 text-sm focus:outline-none" />
+        <input id="venueName" name="name" required placeholder="e.g., St. Martha's ICU" class="w-full px-3.5 py-2.5 rounded-xl border sz-border sz-surface-2 text-sm focus:outline-none" />
       </div>
       <div>
         <label class="block text-xs sz-muted mb-1.5">Category</label>
@@ -58,8 +63,8 @@
         </select>
       </div>
       <div>
-        <label class="block text-xs sz-muted mb-1.5">Venue Wi-Fi SSID</label>
-        <input id="venueSsid" name="ssid" required placeholder="e.g., MasjidSilentZone" class="w-full px-3.5 py-2.5 rounded-xl border sz-border sz-surface-2 font-mono-code text-sm focus:outline-none" />
+        <label class="block text-xs sz-muted mb-1.5">Your Venue Wi-Fi SSID</label>
+        <input id="venueSsid" name="ssid" required placeholder="Type your router/hotspot name" class="w-full px-3.5 py-2.5 rounded-xl border sz-border sz-surface-2 font-mono-code text-sm focus:outline-none" />
       </div>
     </div>
     <input type="hidden" id="eventsJson" name="events_json" value="[]" />
@@ -70,17 +75,31 @@
 </section>
 
 <script>
+function previewPhoto(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  document.getElementById('fileName').textContent = `${file.name} (${Math.round(file.size/1024)} KB)`;
+  const img = document.getElementById('photoPreview');
+  img.src = URL.createObjectURL(file);
+  img.classList.remove('hidden');
+}
+
 function loadDemo(type) {
   if (type === 'masjid') {
-    document.getElementById('rawText').value = 'Masjid Al-Noor Bengaluru — Fajr Jamaat 5:45 AM, Dhuhr 1:15 PM, Asr 4:45 PM, Maghrib 6:05 PM, Isha 7:45 PM, Jumuah 1:30 PM Fridays';
+    document.getElementById('rawText').value = 'Masjid Al-Noor Bengaluru — Fajr Jamaat 5:45 AM, Dhuhr 1:15 PM, Asr 4:45 PM, Maghrib 6:05 PM, Isha 7:45 PM';
     document.getElementById('venueName').value = 'Masjid Al-Noor Bengaluru';
     document.getElementById('venueCategory').value = 'Place of Worship';
     document.getElementById('venueSsid').value = 'MasjidSilentZone';
-  } else {
+  } else if (type === 'library') {
     document.getElementById('rawText').value = 'Central Engineering Library — Morning Quiet Hours 9:00 AM to 12:30 PM, Afternoon Study Block 2:00 PM to 5:30 PM (Monday to Saturday)';
     document.getElementById('venueName').value = 'Central Engineering Library';
     document.getElementById('venueCategory').value = 'Library';
     document.getElementById('venueSsid').value = 'LibraryQuietZone';
+  } else {
+    document.getElementById('rawText').value = 'City Care Hospital ICU — Morning Rounds 8:00 AM to 11:00 AM, Afternoon Quiet Recovery 2:00 PM to 4:00 PM, Night Quiet Hours 9:00 PM to 6:00 AM';
+    document.getElementById('venueName').value = 'City Care Hospital ICU';
+    document.getElementById('venueCategory').value = 'Hospital / Clinic';
+    document.getElementById('venueSsid').value = 'HospitalSilentICU';
   }
 }
 

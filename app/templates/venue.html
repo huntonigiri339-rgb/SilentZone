@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% block title %}{{ venue.name }} — SilentZone{% endblock %}
 {% block content %}
-<section class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8">
+<section class="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-8 sz-reveal">
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b sz-border">
     <div class="space-y-2">
-      <span class="inline-block text-xs px-3 py-1 rounded-full sz-pill font-medium">{{ venue.category }}</span>
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="inline-block text-xs px-3 py-1 rounded-full sz-pill font-medium">{{ venue.category }}</span>
+        <span id="osBadge" class="inline-block text-xs px-3 py-1 rounded-full border sz-border sz-surface-2 font-mono-code">{{ device_info.label }}</span>
+      </div>
       <h1 class="font-editorial text-4xl sm:text-5xl">{{ venue.name }}</h1>
       <div class="flex flex-wrap items-center gap-2 pt-1">
         <span class="text-xs sz-muted">Venue Wi-Fi SSID:</span>
@@ -13,26 +16,35 @@
       </div>
     </div>
     <div class="flex flex-wrap gap-2.5">
-      <a href="/v/{{ venue.venue_id }}/calendar.ics" class="sz-btn-primary px-5 py-2.5 rounded-full text-sm font-semibold">1. Subscribe to Calendar (.ics)</a>
-      <a href="/v/{{ venue.venue_id }}/poster" target="_blank" class="px-5 py-2.5 rounded-full text-sm font-medium border sz-border hover:opacity-80">Print QR Poster</a>
+      <a href="/v/{{ venue.venue_id }}/calendar.ics" class="sz-btn-primary px-5 py-2.5 rounded-full text-sm font-semibold">1. Download / Subscribe (.ics)</a>
+      <a href="{{ webcal_url }}" class="px-4 py-2.5 rounded-full text-sm font-medium border sz-border hover:opacity-80">iOS / Mac Webcal</a>
+      <a href="/v/{{ venue.venue_id }}/poster" target="_blank" class="px-4 py-2.5 rounded-full text-sm font-medium border sz-border hover:opacity-80">Print QR Poster</a>
     </div>
+  </div>
+
+  <div class="p-4 rounded-2xl sz-pill flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+    <div>
+      <strong class="uppercase font-mono-code">Detected Automation Profile:</strong>
+      <span id="osTrigger">{{ device_info.trigger }}</span>
+    </div>
+    <span id="osHint" class="font-mono-code opacity-85">{{ device_info.steps_hint }}</span>
   </div>
 
   <div class="grid lg:grid-cols-12 gap-6">
     <div class="lg:col-span-7 sz-card p-6 space-y-5">
       <div class="space-y-1">
         <p class="text-xs font-mono-code uppercase sz-muted">2. Gemini Multilingual Setup Co-Pilot</p>
-        <h2 class="text-lg font-semibold">Bind your 3-tap native phone rule</h2>
+        <h2 class="text-lg font-semibold">Bind your 3-tap native silent trigger</h2>
       </div>
       <div class="grid sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs sz-muted mb-1">Your Device</label>
+          <label class="block text-xs sz-muted mb-1">Your Phone OS</label>
           <select id="deviceSelect" class="w-full px-3 py-2 rounded-xl border sz-border sz-surface-2 text-sm">
-            <option value="{{ detected_device }}">Detected: {{ detected_device }}</option>
-            <option value="Samsung Galaxy (Modes & Routines)">Samsung Galaxy (Modes &amp; Routines)</option>
-            <option value="Google Pixel (Android Rules)">Google Pixel (Android Rules)</option>
-            <option value="Xiaomi / Redmi / OnePlus (Android + MacroDroid)">Xiaomi / Redmi / OnePlus</option>
-            <option value="iPhone (iOS Focus & Shortcuts)">iPhone (iOS Focus &amp; Shortcuts)</option>
+            <option value="{{ device_info.label }}">Auto: {{ device_info.label }}</option>
+            <option value="Samsung Galaxy (Modes & Routines)">Samsung Galaxy (Modes &amp; Routines -> DND)</option>
+            <option value="Google Pixel (Android Rules)">Google Pixel (Android Rules -> DND)</option>
+            <option value="Xiaomi / Redmi / OnePlus (Android + MacroDroid Silent Mode)">Xiaomi / Redmi / OnePlus (Silent Mode)</option>
+            <option value="iPhone (iOS Focus & Silent Notification Trigger)">iPhone (iOS Focus &amp; Notification Trigger)</option>
           </select>
         </div>
         <div>
@@ -60,7 +72,8 @@
     <div class="lg:col-span-5 space-y-5">
       <div class="sz-card p-6 text-center space-y-3">
         <img src="{{ qr_uri }}" alt="Venue QR Code" class="w-44 h-44 mx-auto rounded-xl border sz-border bg-white p-2" />
-        <p class="text-xs sz-muted">Scan to open this SilentZone onboarding page</p>
+        <p class="text-xs sz-muted">Scan with any phone camera to open this page</p>
+        <a href="{{ venue_url }}" class="block font-mono-code text-[11px] break-all underline sz-muted">{{ venue_url }}</a>
       </div>
 
       <div class="sz-card p-6 space-y-3">
@@ -79,6 +92,25 @@
 </section>
 
 <script>
+// Client-side OS refinement (handles Samsung Internet / iOS Safari / Android Chrome accurately)
+(function() {
+  const ua = navigator.userAgent.toLowerCase();
+  const sel = document.getElementById('deviceSelect');
+  if (/iphone|ipad|ipod/.test(ua)) {
+    sel.value = 'iPhone (iOS Focus & Silent Notification Trigger)';
+    document.getElementById('osBadge').textContent = 'iOS · Focus Trigger';
+  } else if (/samsung|sm-/.test(ua)) {
+    sel.value = 'Samsung Galaxy (Modes & Routines)';
+    document.getElementById('osBadge').textContent = 'Samsung · Modes & Routines DND';
+  } else if (/pixel/.test(ua)) {
+    sel.value = 'Google Pixel (Android Rules)';
+    document.getElementById('osBadge').textContent = 'Pixel · Android Rules DND';
+  } else if (/android/.test(ua)) {
+    sel.value = 'Xiaomi / Redmi / OnePlus (Android + MacroDroid Silent Mode)';
+    document.getElementById('osBadge').textContent = 'Android · Silent Trigger';
+  }
+})();
+
 async function fetchGuide() {
   const btn = document.getElementById('guideBtn');
   btn.disabled = true;
