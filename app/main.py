@@ -267,3 +267,8 @@ async def manifest():
         "background_color": "#0C0D0F",
         "theme_color": "#C46D3B",
     })
+
+
+@app.get("/googleebd5a8bfb28f3615.html")
+async def google_verify_file():
+    return Response("google-site-verification: googleebd5a8bfb28f3615.html", media_type="text/html")
