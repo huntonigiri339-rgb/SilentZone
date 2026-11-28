@@ -236,26 +236,19 @@ async def health():
     import os
     return {"status": "ok", "service": "SilentZone", "gemini_configured": bool(os.getenv("GEMINI_API_KEY", "").strip())}
 
-
 @app.get("/robots.txt")
 async def robots():
-    return Response("User-agent: *
-Allow: /
-Sitemap: https://silentzone.onrender.com/sitemap.xml
-", media_type="text/plain")
-
+    txt = "User-agent: *\nAllow: /\n"
+    txt += "Sitemap: https://silentzone.onrender.com/sitemap.xml\n"
+    return Response(txt, media_type="text/plain")
 
 @app.get("/sitemap.xml")
 async def sitemap():
-    xml = """<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://silentzone.onrender.com/</loc></url>
-  <url><loc>https://silentzone.onrender.com/admin</loc></url>
-  <url><loc>https://silentzone.onrender.com/v/masjid-al-noor-blr</loc></url>
-  <url><loc>https://silentzone.onrender.com/v/central-library-blr</loc></url>
-</urlset>"""
+    base = "https://silentzone.onrender.com"
+    urls = ["/", "/admin", "/v/masjid-al-noor-blr", "/v/central-library-blr"]
+    items = "".join(f"<url><loc>{base}{u}</loc></url>" for u in urls)
+    xml = f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>'
     return Response(xml, media_type="application/xml")
-
 
 @app.get("/manifest.json")
 async def manifest():
@@ -268,7 +261,9 @@ async def manifest():
         "theme_color": "#C46D3B",
     })
 
-
 @app.get("/googleebd5a8bfb28f3615.html")
 async def google_verify_file():
-    return Response("google-site-verification: googleebd5a8bfb28f3615.html", media_type="text/html")
+    return Response(
+        "google-site-verification: googleebd5a8bfb28f3615.html",
+        media_type="text/html",
+    )
