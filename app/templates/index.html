@@ -1,21 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
-<section class="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-14">
+<section class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 pb-14 sz-reveal">
   <div class="grid lg:grid-cols-12 gap-10 items-center">
     <div class="lg:col-span-7 space-y-6">
-      <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium sz-pill">
-        <span class="w-1.5 h-1.5 rounded-full" style="background: var(--accent);"></span>
-        Venue-Driven Silence · Powered by Gemini &amp; Google Cloud
+      <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium sz-pill">
+        <span class="w-2 h-2 rounded-full animate-pulse" style="background: var(--accent);"></span>
+        Venue-Driven Silence · Built with Silent-Zone Labs &amp; Google AI
       </span>
-      <h1 class="font-editorial text-5xl sm:text-6xl lg:text-7xl leading-[1.02] tracking-tight">
+      <h1 class="font-editorial text-5xl sm:text-6xl lg:text-[4.5rem] leading-[1.0] tracking-tight">
         Quiet spaces that silence phones <span class="italic" style="color: var(--accent);">automatically.</span>
       </h1>
       <p class="text-base sm:text-lg sz-muted max-w-xl leading-relaxed">
-        SilentZone pairs your venue's existing Wi-Fi name with a Gemini-synced live calendar feed. Visitors scan once—no third-party app, no GPS tracking, and emergency repeat callers still ring through.
+        No third-party apps. No GPS tracking. SilentZone pairs your venue's existing Wi-Fi beacon with a Gemini-synced live calendar feed so visitor phones silence only during active quiet hours—and let emergency calls through.
       </p>
-      <div class="flex flex-wrap items-center gap-3 pt-2">
-        <a href="/admin" class="sz-btn-primary px-6 py-3 rounded-full text-sm font-semibold">Launch Venue Studio</a>
-        <a href="#how-it-works" class="px-6 py-3 rounded-full text-sm font-medium border sz-border hover:opacity-80">See How It Works</a>
+      <div class="flex flex-wrap items-center gap-3 pt-1">
+        <a href="/admin" class="sz-btn-primary px-6 py-3.5 rounded-full text-sm font-semibold">Launch Venue Studio →</a>
+        <a href="#venues" class="px-6 py-3.5 rounded-full text-sm font-medium border sz-border hover:opacity-80">Explore Live Venues</a>
       </div>
       <div class="grid grid-cols-3 gap-4 pt-6 border-t sz-border max-w-lg">
         <div>
@@ -33,36 +33,49 @@
       </div>
     </div>
 
+    <!-- Interactive Live SilentZone Simulator -->
     <div class="lg:col-span-5">
-      <div class="sz-card p-6 sm:p-7 space-y-5 shadow-sm">
-        <div class="flex items-center justify-between text-xs font-mono-code sz-muted">
-          <span>LIVE TRIGGER LOGIC</span>
-          <span class="px-2 py-0.5 rounded-full sz-pill">EMERGENCY SAFE</span>
+      <div class="sz-card p-6 sm:p-7 space-y-5 shadow-md">
+        <div class="flex items-center justify-between text-xs font-mono-code">
+          <span class="sz-muted">INTERACTIVE SIMULATOR</span>
+          <span id="simBadge" class="px-2.5 py-0.5 rounded-full font-semibold transition-all" style="background: var(--surface-2); color: var(--muted);">RINGER ON</span>
         </div>
-        <div class="space-y-3">
-          <div class="p-4 rounded-2xl sz-surface-2 flex items-center justify-between">
+
+        <!-- Simulated Phone Status Header -->
+        <div id="simScreen" class="p-5 rounded-2xl border sz-border sz-surface-2 transition-all duration-300 space-y-3">
+          <div class="flex items-center justify-between text-[11px] font-mono-code sz-muted">
+            <span id="simClock">13:20 IST</span>
+            <span id="simWifiLabel">Cellular 5G</span>
+          </div>
+          <div class="py-2 text-center space-y-1">
+            <p id="simStatusTitle" class="font-editorial text-3xl">Normal Sound</p>
+            <p id="simStatusSub" class="text-xs sz-muted">Toggle both conditions below to test SilentZone</p>
+          </div>
+          <div id="simAlert" class="hidden text-center text-xs font-medium px-3 py-2 rounded-xl" style="background: rgba(16, 185, 129, 0.16); color: #10B981;"></div>
+        </div>
+
+        <!-- Interactive Toggle Switches -->
+        <div class="space-y-2.5">
+          <button type="button" onclick="toggleSim('wifi')" id="btnWifi" class="w-full p-3.5 rounded-xl border sz-border sz-surface-2 flex items-center justify-between text-left transition-all hover:opacity-90">
             <div>
-              <p class="text-xs sz-muted">Condition 1 · Presence</p>
-              <p class="font-mono-code text-sm font-medium mt-0.5">Wi-Fi == MasjidSilentZone</p>
+              <p class="text-[11px] font-mono-code sz-muted">CONDITION 1 · PRESENCE</p>
+              <p class="text-sm font-medium mt-0.5">Connected to <span class="font-mono-code">MasjidSilentZone</span></p>
             </div>
-            <span class="text-xs font-mono-code px-2 py-1 rounded-lg border sz-border">LOCAL</span>
-          </div>
-          <div class="text-center text-xs font-mono-code sz-muted">+ AND +</div>
-          <div class="p-4 rounded-2xl sz-surface-2 flex items-center justify-between">
+            <span id="pillWifi" class="text-xs font-mono-code px-2.5 py-1 rounded-full border sz-border">OFF</span>
+          </button>
+
+          <button type="button" onclick="toggleSim('cal')" id="btnCal" class="w-full p-3.5 rounded-xl border sz-border sz-surface-2 flex items-center justify-between text-left transition-all hover:opacity-90">
             <div>
-              <p class="text-xs sz-muted">Condition 2 · Live Schedule</p>
-              <p class="font-mono-code text-sm font-medium mt-0.5">Calendar Event == Active</p>
+              <p class="text-[11px] font-mono-code sz-muted">CONDITION 2 · LIVE .ICS FEED</p>
+              <p class="text-sm font-medium mt-0.5">Dhuhr Jamaat Window Active</p>
             </div>
-            <span class="text-xs font-mono-code px-2 py-1 rounded-lg border sz-border">.ICS</span>
-          </div>
+            <span id="pillCal" class="text-xs font-mono-code px-2.5 py-1 rounded-full border sz-border">OFF</span>
+          </button>
         </div>
-        <div class="p-4 rounded-2xl border sz-border flex items-center justify-between">
-          <div>
-            <p class="text-sm font-semibold">Do Not Disturb Activated</p>
-            <p class="text-xs sz-muted mt-0.5">Repeat callers &amp; starred contacts bypass natively</p>
-          </div>
-          <span class="w-3 h-3 rounded-full" style="background: var(--accent);"></span>
-        </div>
+
+        <button type="button" onclick="simulateEmergency()" class="w-full py-2.5 rounded-xl border sz-border text-xs font-mono-code sz-muted hover:opacity-80 transition">
+          Test Emergency Repeat Caller Bypass →
+        </button>
       </div>
     </div>
   </div>
@@ -77,47 +90,94 @@
     <div class="sz-card p-6 space-y-2.5">
       <p class="font-mono-code text-xs" style="color: var(--accent);">01 · SNAP &amp; PARSE</p>
       <h3 class="text-lg font-semibold">Gemini reads any timetable</h3>
-      <p class="text-sm sz-muted leading-relaxed">Upload a photo of a masjid prayer board, college timetable, or hospital OPD notice. Gemini extracts clean 24-hour quiet windows automatically.</p>
+      <p class="text-sm sz-muted leading-relaxed">Upload a photo of a prayer board, college timetable, or hospital OPD notice. Gemini extracts clean 24-hour quiet windows automatically.</p>
     </div>
     <div class="sz-card p-6 space-y-2.5">
       <p class="font-mono-code text-xs" style="color: var(--accent);">02 · PUBLISH LIVE .ICS</p>
       <h3 class="text-lg font-semibold">Auto-syncing QR poster</h3>
-      <p class="text-sm sz-muted leading-relaxed">SilentZone generates a permanent `.ics` subscription feed and a print-ready QR poster paired with your venue's existing Wi-Fi SSID.</p>
+      <p class="text-sm sz-muted leading-relaxed">SilentZone generates a permanent `.ics` subscription feed and print-ready QR signage paired with your venue's existing Wi-Fi SSID.</p>
     </div>
     <div class="sz-card p-6 space-y-2.5">
       <p class="font-mono-code text-xs" style="color: var(--accent);">03 · ZERO-APP AUTOMATION</p>
-      <h3 class="text-lg font-semibold">Multilingual native setup</h3>
-      <p class="text-sm sz-muted leading-relaxed">Visitors scan once and follow 3 phone-specific steps in English, Kannada, Hindi, Urdu, or Tamil. Sound restores automatically on exit.</p>
+      <h3 class="text-lg font-semibold">OS-aware multilingual setup</h3>
+      <p class="text-sm sz-muted leading-relaxed">Auto-detects Samsung, Pixel, Android, or iOS and serves 3-tap setup steps in English, Kannada, Hindi, Urdu, or Tamil.</p>
     </div>
   </div>
 </section>
 
 <section id="venues" class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
     <div>
-      <p class="text-xs font-mono-code uppercase tracking-wider sz-muted">Directory</p>
+      <p class="text-xs font-mono-code uppercase tracking-wider sz-muted">Live Directory</p>
       <h2 class="font-editorial text-3xl mt-1">Active SilentZones</h2>
     </div>
-    <a href="/admin" class="text-sm font-medium hover:underline" style="color: var(--accent);">+ Add Venue</a>
+    <div class="flex flex-wrap items-center gap-2">
+      <button onclick="filterVenues('all')" class="text-xs px-3 py-1.5 rounded-full border sz-border sz-surface-2 hover:opacity-80">All</button>
+      <button onclick="filterVenues('Place of Worship')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Worship</button>
+      <button onclick="filterVenues('Library')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Library</button>
+      <button onclick="filterVenues('Hospital / Clinic')" class="text-xs px-3 py-1.5 rounded-full border sz-border hover:opacity-80">Hospital</button>
+      <a href="/admin" class="text-xs font-semibold px-3.5 py-1.5 rounded-full sz-btn-primary">+ Add Venue</a>
+    </div>
   </div>
-  {% if venues %}
-  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+  <div id="venueGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
     {% for v in venues %}
-    <a href="/v/{{ v.venue_id }}" class="sz-card p-5 hover:opacity-95 transition block space-y-3">
+    <a href="/v/{{ v.venue_id }}" data-cat="{{ v.category }}" class="sz-card p-5 block space-y-3">
       <div class="flex items-center justify-between">
         <span class="text-xs px-2.5 py-0.5 rounded-full sz-pill">{{ v.category }}</span>
         <span class="font-mono-code text-xs sz-muted">{{ v.events|length }} windows</span>
       </div>
       <h3 class="font-semibold text-base">{{ v.name }}</h3>
-      <p class="font-mono-code text-xs sz-muted">SSID: {{ v.ssid }}</p>
+      <div class="flex items-center justify-between pt-2 border-t sz-border">
+        <span class="font-mono-code text-xs sz-muted">SSID: {{ v.ssid }}</span>
+        <span class="text-xs font-medium" style="color: var(--accent);">Open QR →</span>
+      </div>
     </a>
     {% endfor %}
   </div>
-  {% else %}
-  <div class="sz-card p-8 text-center space-y-3">
-    <p class="text-sm sz-muted">No venues published yet. Create your first SilentZone in 30 seconds.</p>
-    <a href="/admin" class="inline-block sz-btn-primary px-5 py-2.5 rounded-full text-sm font-medium">Open Venue Studio</a>
-  </div>
-  {% endif %}
 </section>
+
+<script>
+let simState = { wifi: false, cal: false };
+
+function renderSim() {
+  const active = simState.wifi && simState.cal;
+  document.getElementById('pillWifi').textContent = simState.wifi ? 'ON' : 'OFF';
+  document.getElementById('pillWifi').style.background = simState.wifi ? 'var(--accent)' : 'transparent';
+  document.getElementById('pillWifi').style.color = simState.wifi ? '#FFF' : 'var(--muted)';
+
+  document.getElementById('pillCal').textContent = simState.cal ? 'ON' : 'OFF';
+  document.getElementById('pillCal').style.background = simState.cal ? 'var(--accent)' : 'transparent';
+  document.getElementById('pillCal').style.color = simState.cal ? '#FFF' : 'var(--muted)';
+
+  document.getElementById('simWifiLabel').textContent = simState.wifi ? 'Wi-Fi: MasjidSilentZone' : 'Cellular 5G';
+  const badge = document.getElementById('simBadge');
+  badge.textContent = active ? 'DO NOT DISTURB ACTIVE' : 'RINGER ON';
+  badge.style.background = active ? 'var(--accent)' : 'var(--surface-2)';
+  badge.style.color = active ? '#FFFFFF' : 'var(--muted)';
+
+  document.getElementById('simStatusTitle').textContent = active ? 'Phone Silenced' : 'Normal Sound';
+  document.getElementById('simStatusSub').textContent = active
+    ? 'Both conditions met — restores automatically on exit'
+    : 'Requires BOTH venue Wi-Fi AND an active quiet window';
+  document.getElementById('simAlert').classList.add('hidden');
+}
+
+function toggleSim(key) {
+  simState[key] = !simState[key];
+  renderSim();
+}
+
+function simulateEmergency() {
+  const el = document.getElementById('simAlert');
+  el.textContent = '2nd call from Mom within 15 min → Rings through natively (Emergency Safe ✓)';
+  el.classList.remove('hidden');
+}
+
+function filterVenues(cat) {
+  document.querySelectorAll('#venueGrid > a').forEach(card => {
+    card.style.display = (cat === 'all' || card.dataset.cat === cat) ? 'block' : 'none';
+  });
+}
+</script>
 {% endblock %}

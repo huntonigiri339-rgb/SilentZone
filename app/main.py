@@ -235,3 +235,35 @@ async def api_setup_guide(
 async def health():
     import os
     return {"status": "ok", "service": "SilentZone", "gemini_configured": bool(os.getenv("GEMINI_API_KEY", "").strip())}
+
+
+@app.get("/robots.txt")
+async def robots():
+    return Response("User-agent: *
+Allow: /
+Sitemap: https://silentzone.onrender.com/sitemap.xml
+", media_type="text/plain")
+
+
+@app.get("/sitemap.xml")
+async def sitemap():
+    xml = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://silentzone.onrender.com/</loc></url>
+  <url><loc>https://silentzone.onrender.com/admin</loc></url>
+  <url><loc>https://silentzone.onrender.com/v/masjid-al-noor-blr</loc></url>
+  <url><loc>https://silentzone.onrender.com/v/central-library-blr</loc></url>
+</urlset>"""
+    return Response(xml, media_type="application/xml")
+
+
+@app.get("/manifest.json")
+async def manifest():
+    return JSONResponse({
+        "name": "SilentZone Labs",
+        "short_name": "SilentZone",
+        "start_url": "/",
+        "display": "standalone",
+        "background_color": "#0C0D0F",
+        "theme_color": "#C46D3B",
+    })
